@@ -1,0 +1,15 @@
+# Requirements MINIMAL - apenas o essencial para funcionar
+# Use: pip install -r requirements-minimal.txt
+
+# Core ML (versão mais estável)
+tensorflow>=2.10.0,<2.15.0
+
+# Dataset
+medmnist>=1.0.0
+
+# Web App
+streamlit>=1.20.0
+
+# Básicos
+numpy>=1.21.0
+pillow>=8.0.0
