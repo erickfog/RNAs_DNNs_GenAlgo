@@ -1,0 +1,76 @@
+# Ambiente virtual
+pneumonia_env/
+venv/
+env/
+.venv/
+
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Modelos treinados (pode ser grande)
+models/*.keras
+models/*.h5
+models/*.pb
+
+# Logs
+*.log
+logs/
+
+# Imagens geradas
+*.png
+*.jpg
+*.jpeg
+!demo_results.png
+!dataset_test_results.png
+
+# Dados
+data/
+*.csv
+*.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Cache
+.cache/
+.pytest_cache/
+
+# Arquivos temporários
+*.tmp
+*.temp 
