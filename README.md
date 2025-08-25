@@ -2,48 +2,98 @@
 
 Este projeto implementa um sistema completo para classificação de pneumonia em imagens de raio-X usando Redes Neurais Convolucionais (CNNs) e o dataset PneumoniaMNIST.
 
-## Estrutura do Projeto
+## 🚀 **Instalação Rápida**
 
-```
-├── README.md
-├── requirements.txt
-├── train.py
-├── app.py
-├── models/
-│   └── pneumonia_cnn_model.keras
-├── data/
-│   └── .gitkeep
-└── utils/
-    └── data_loader.py
+### **Opção 1: Instalação Completa (Recomendado para desenvolvimento)**
+```bash
+pip install -r requirements.txt
 ```
 
-## Configuração do Ambiente
+### **Opção 2: Instalação para Produção (Versões estáveis)**
+```bash
+pip install -r requirements-prod.txt
+```
 
-### 1. Criar e ativar ambiente virtual
+### **Opção 3: Instalação Minimal (Apenas essencial)**
+```bash
+pip install -r requirements-minimal.txt
+```
+
+### **Opção 4: Deploy (Apenas para executar o app)**
+```bash
+pip install -r requirements-deploy.txt
+```
+
+## 🚀 **Deploy em Produção**
+
+### **Para Render, Heroku, Railway, etc.**
+```bash
+# Use o requirements-deploy.txt (muito mais leve)
+pip install -r requirements-deploy.txt
+
+# Configure o ambiente
+python deploy-config.py
+
+# Execute o app
+streamlit run app.py
+```
+
+### **Vantagens do Modo Deploy**
+- ✅ **Muito mais leve**: Sem TensorFlow, PyTorch, CUDA
+- ✅ **Deploy rápido**: Instalação em segundos
+- ✅ **Funcionalidade básica**: App funciona para demonstração
+- ✅ **Sem erros CUDA**: Funciona em qualquer ambiente
+- ⚠️ **Limitações**: Predições simuladas (não reais)
+
+### **Para Funcionalidade Completa em Deploy**
+```bash
+# Instalar TensorFlow (opcional)
+pip install tensorflow
+
+# Treinar modelo localmente e fazer upload
+python train.py
+# Upload do arquivo models/pneumonia_cnn_model.keras
+```
+
+## 📋 **Requisitos do Sistema**
+
+- **Python**: 3.8 - 3.11 (recomendado 3.9)
+- **RAM**: 4GB+ (8GB+ recomendado)
+- **GPU**: Opcional (CPU funciona bem)
+- **Sistema**: Linux, macOS, Windows
+
+## 🛠️ **Configuração do Ambiente**
+
+### **1. Criar e ativar ambiente virtual**
 
 ```bash
 # Usando venv (recomendado)
-python -m venv pneumonia_env
-source pneumonia_env/bin/activate  # Linux/Mac
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
 # ou
-pneumonia_env\Scripts\activate  # Windows
+.venv\Scripts\activate  # Windows
 
 # Usando conda
 conda create -n pneumonia_env python=3.9
 conda activate pneumonia_env
 ```
 
-### 2. Instalar dependências
+### **2. Instalar dependências**
 
 ```bash
+# Para desenvolvimento
 pip install -r requirements.txt
+
+# Para produção
+pip install -r requirements-prod.txt
+
+# Para casos simples
+pip install -r requirements-minimal.txt
 ```
 
-## Uso do Sistema
+## 🎯 **Uso do Sistema**
 
-### 1. Treinamento do Modelo
-
-Para treinar a CNN:
+### **1. Treinamento do Modelo**
 
 ```bash
 python train.py
@@ -51,9 +101,7 @@ python train.py
 
 O modelo treinado será salvo em `models/pneumonia_cnn_model.keras`.
 
-### 2. Executar o App Streamlit
-
-Para iniciar a aplicação web:
+### **2. Executar o App Streamlit**
 
 ```bash
 streamlit run app.py
@@ -61,32 +109,77 @@ streamlit run app.py
 
 Acesse http://localhost:8501 no seu navegador.
 
-## Funcionalidades
+### **3. Teste Rápido**
 
-- **Treinamento**: CNN otimizada para classificação binária (normal vs pneumonia)
-- **Interface Web**: App Streamlit para upload e classificação de imagens
-- **Visualização**: Gráficos de acurácia e perda durante o treinamento
-- **Predição**: Classificação em tempo real com probabilidades
+```bash
+python quick_test.py
+```
 
-## Dataset
+## 📁 **Estrutura do Projeto**
 
-Utilizamos o **PneumoniaMNIST** do MedMNIST, que contém:
-- 4,800 imagens de treino
-- 1,200 imagens de validação  
-- 1,200 imagens de teste
-- Classes: Normal (0) e Pneumonia (1)
+```
+├── README.md
+├── requirements.txt          # Desenvolvimento
+├── requirements-prod.txt     # Produção
+├── requirements-minimal.txt  # Minimal
+├── train.py                 # Treinamento
+├── app.py                   # App Streamlit
+├── quick_test.py            # Teste rápido
+├── models/                  # Modelos treinados
+├── data/                    # Datasets
+└── utils/                   # Utilitários
+```
 
-## Arquitetura da CNN
+## 🔧 **Solução de Problemas**
 
-- Camadas convolucionais com ReLU
-- MaxPooling para redução dimensional
-- Dropout para regularização
-- Camadas densas para classificação final
-- Otimizador Adam com learning rate adaptativo
+### **Erro CUDA/GPU**
+Se encontrar erros relacionados ao CUDA, o sistema já está configurado para usar CPU automaticamente.
 
-## Requisitos do Sistema
+### **Versões Incompatíveis**
+Use `requirements-prod.txt` para versões estáveis ou `requirements-minimal.txt` para dependências básicas.
 
-- Python 3.8+
-- 8GB+ RAM (recomendado)
-- GPU opcional (acelera treinamento)
-- Navegador web moderno 
+### **Problemas de Memória**
+- Reduza o batch size no `train.py`
+- Use `requirements-minimal.txt`
+- Feche outros aplicativos
+
+## 📊 **Funcionalidades**
+
+- **Treinamento**: CNN otimizada para classificação binária
+- **Interface Web**: App Streamlit para upload e classificação
+- **Threshold Configurável**: Ajuste a sensibilidade do modelo
+- **Visualização**: Gráficos de acurácia, perda e ROC
+- **Classificação Inteligente**: Baseada em confiança, não apenas classe
+
+## 🧠 **Arquitetura da CNN**
+
+- **Camadas Convolucionais**: 3 blocos (32, 64, 128 filtros)
+- **Regularização**: BatchNormalization + Dropout
+- **Pooling**: MaxPooling2D para redução dimensional
+- **Camadas Densas**: 512 → 256 → 2 neurônios
+- **Ativação**: Softmax para classificação
+
+## 📈 **Métricas de Avaliação**
+
+- **Acurácia**: Predições corretas
+- **Precisão**: Predições positivas corretas
+- **Recall**: Sensibilidade do modelo
+- **F1-Score**: Média harmônica
+- **Curva ROC**: Capacidade discriminativa
+- **Análise de Threshold**: Otimização de sensibilidade
+
+## ⚠️ **Aviso Médico**
+
+Este sistema é **APENAS** uma ferramenta educacional e de demonstração. **NÃO** deve ser usado para diagnóstico médico real. Sempre consulte um profissional de saúde qualificado.
+
+## 🤝 **Contribuição**
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+## 📄 **Licença**
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes. 

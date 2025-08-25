@@ -4,16 +4,30 @@ App Streamlit para classificação de pneumonia em raios-X
 
 import streamlit as st
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 import matplotlib.pyplot as plt
 import seaborn as sns
-from utils.data_loader import get_dataset_info
 import os
 
-# Configurar TensorFlow para usar apenas CPU (evitar erros CUDA)
+# Configurar para usar apenas CPU (evitar erros CUDA)
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-tf.config.set_visible_devices([], 'GPU')
+
+# Tentar importar TensorFlow (opcional para deploy)
+try:
+    import tensorflow as tf
+    tf.config.set_visible_devices([], 'GPU')
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+    st.warning("⚠️ TensorFlow não disponível - modo demonstração ativado")
+
+# Importar módulo local
+try:
+    from utils.data_loader import get_dataset_info
+    UTILS_AVAILABLE = True
+except ImportError:
+    UTILS_AVAILABLE = False
+    st.warning("⚠️ Módulo utils não disponível - usando informações padrão")
 
 # Configurações da página
 st.set_page_config(
@@ -32,14 +46,18 @@ with st.sidebar:
     st.header("ℹ️ Sobre o Sistema")
     
     # Informações do dataset
-    dataset_info = get_dataset_info()
-    st.subheader("📊 Dataset")
-    st.write(f"**Nome:** {dataset_info['name']}")
-    st.write(f"**Descrição:** {dataset_info['description']}")
-    st.write(f"**Tamanho das imagens:** {dataset_info['image_size']}")
-    st.write(f"**Classes:** {', '.join(dataset_info['class_names'])}")
+    if UTILS_AVAILABLE:
+        dataset_info = get_dataset_info()
+        st.subheader("📊 Dataset")
+        st.write(f"**Nome:** {dataset_info['name']}")
+        st.write(f"**Descrição:** {dataset_info['description']}")
+        st.write(f"**Tamanho das imagens:** {dataset_info['image_size']}")
+        st.write(f"**Classes:** {', '.join(dataset_info['class_names'])}")
+    else:
+        st.subheader("📊 Dataset")
+        st.write("**Informações do Dataset:** Não disponível no modo de demonstração.")
     
-    st.subheader("🧠 Arquitetura CNN")
+    st.subheader("Arquitetura CNN")
     st.write("""
     - **Camadas Convolucionais:** 3 blocos com filtros 32, 64, 128
     - **Regularização:** BatchNormalization + Dropout
@@ -80,6 +98,10 @@ with st.sidebar:
 @st.cache_resource
 def load_model():
     """Carrega o modelo treinado"""
+    if not TENSORFLOW_AVAILABLE:
+        st.warning("⚠️ TensorFlow não disponível - modo demonstração")
+        return None
+        
     try:
         model_path = "models/pneumonia_cnn_model.keras"
         if os.path.exists(model_path):
@@ -114,6 +136,26 @@ def preprocess_image(image):
 # Função para fazer predição
 def predict_pneumonia(model, image_array):
     """Faz predição usando o modelo"""
+    if not TENSORFLOW_AVAILABLE or model is None:
+        # Modo demonstração - predição simulada
+        st.info("🎭 Modo demonstração: usando predição simulada")
+        
+        # Simular predição baseada no conteúdo da imagem
+        img_mean = np.mean(image_array)
+        img_std = np.std(image_array)
+        
+        # Lógica simples para demonstração
+        if img_std > 0.3:  # Imagem com mais variação
+            prob_pneumonia = 0.7 + np.random.normal(0, 0.1)
+        else:  # Imagem mais uniforme
+            prob_pneumonia = 0.3 + np.random.normal(0, 0.1)
+        
+        # Garantir que as probabilidades estejam entre 0 e 1
+        prob_pneumonia = np.clip(prob_pneumonia, 0.1, 0.9)
+        prob_normal = 1.0 - prob_pneumonia
+        
+        return np.array([prob_normal, prob_pneumonia])
+    
     try:
         prediction = model.predict(image_array, verbose=0)[0]
         return prediction  # Retornar o array completo, não apenas o primeiro elemento
@@ -306,7 +348,9 @@ if model is not None:
                     else:
                         st.error("❌ Erro na predição. Verifique se a imagem é válida.")
 
-else:
+elif TENSORFLOW_AVAILABLE:
+    st.warning("⚠️ Modelo não disponível! Execute primeiro o treinamento.")
+    
     st.error("""
     ❌ **Modelo não disponível!**
     
@@ -318,6 +362,119 @@ else:
     
     Após o treinamento, o modelo será salvo em `models/pneumonia_cnn_model.keras`
     """)
+
+else:
+    st.info("🎭 Modo demonstração ativado - funcionalidades limitadas")
+    
+    # Informações sobre o modo demo
+    with st.expander("ℹ️ Sobre o Modo Demonstração"):
+        st.write("""
+        Este é o modo de demonstração que funciona sem TensorFlow ou modelo treinado.
+        
+        **Funcionalidades disponíveis:**
+        - ✅ Upload de imagens
+        - ✅ Pré-processamento básico
+        - 🎭 Predições simuladas (apenas para demonstração)
+        - ✅ Interface completa do app
+        
+        **Para funcionalidade completa:**
+        1. Instale TensorFlow: `pip install tensorflow`
+        2. Treine o modelo: `python train.py`
+        3. Execute normalmente: `streamlit run app.py`
+        """)
+    
+    # Upload de imagem para demonstração
+    st.header("📤 Upload de Imagem (Modo Demo)")
+    uploaded_file = st.file_uploader(
+        "Escolha uma imagem de raio-X (PNG, JPG, JPEG)",
+        type=['png', 'jpg', 'jpeg'],
+        key="demo_uploader"
+    )
+    
+    if uploaded_file is not None:
+        # Carregar e exibir imagem
+        image = Image.open(uploaded_file)
+        
+        # Layout em colunas
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.subheader("🖼️ Imagem Original")
+            st.image(image, caption="Imagem carregada", use_container_width=True)
+            
+            # Informações da imagem
+            st.write(f"**Formato:** {image.format}")
+            st.write(f"**Tamanho:** {image.size}")
+            st.write(f"**Modo:** {image.mode}")
+        
+        with col2:
+            st.subheader("🔍 Análise (Demo)")
+            
+            # Pré-processar imagem
+            processed_image = preprocess_image(image)
+            
+            # Fazer predição simulada
+            if st.button("🚀 Classificar Imagem (Demo)", type="primary"):
+                with st.spinner("Analisando imagem (modo demo)..."):
+                    prediction = predict_pneumonia(None, processed_image)
+                    
+                    if prediction is not None:
+                        # Classificar com threshold
+                        class_names = ['Normal', 'Pneumonia']
+                        classification_result = classify_with_threshold(
+                            prediction, threshold, class_names
+                        )
+                        
+                        # Verificar se a classificação foi bem-sucedida
+                        if classification_result is None:
+                            st.error("❌ Erro na classificação. Tente novamente.")
+                        else:
+                            # Exibir resultado principal
+                            if classification_result['status_color'] == 'success':
+                                st.success(f"✅ **{classification_result['status']}**")
+                            elif classification_result['status_color'] == 'warning':
+                                st.warning(f"⚠️ **{classification_result['status']}**")
+                            else:
+                                st.error(f"🚨 **{classification_result['status']}**")
+                            
+                            st.info(f"🎯 **Confiança:** {classification_result['confidence']:.3%}")
+                            st.info(f"📊 **Tipo de Classificação:** {classification_result['classification_type']}")
+                            st.info("🎭 **Modo Demo:** Esta é uma predição simulada!")
+                            
+                            # Plotar resultado
+                            fig = plot_prediction_result(image, prediction, class_names, classification_result)
+                            st.pyplot(fig)
+                            
+                            # Interpretação detalhada
+                            st.subheader("📋 Interpretação Detalhada (Demo)")
+                            
+                            if classification_result['predicted_class'] == 0:
+                                st.info("💚 **Resultado:** A imagem foi classificada como **NORMAL**.")
+                                st.write(f"   - Probabilidade de normal: {prediction[0]:.3%}")
+                                st.write(f"   - Probabilidade de pneumonia: {prediction[1]:.3%}")
+                                st.write(f"   - Threshold aplicado: {classification_result['threshold_used']:.1%}")
+                            else:
+                                st.warning("⚠️ **Resultado:** A imagem foi classificada como **PNEUMONIA**.")
+                                st.write(f"   - Probabilidade de pneumonia: {prediction[1]:.3%}")
+                                st.write(f"   - Probabilidade de normal: {prediction[0]:.3%}")
+                                st.write(f"   - Threshold aplicado: {classification_result['threshold_used']:.1%}")
+                                
+                                if classification_result['classification_type'] == "CONFIANÇA ALTA":
+                                    st.error("🚨 **Alta confiança:** Recomenda-se avaliação médica imediata.")
+                                else:
+                                    st.warning("⚠️ **Confiança moderada:** Recomenda-se avaliação médica profissional.")
+                            
+                            # Disclaimer médico
+                            st.warning("""
+                            ⚠️ **Aviso Médico:** 
+                            Este sistema é apenas uma ferramenta educacional e de demonstração. 
+                            **NÃO** deve ser usado para diagnóstico médico real. 
+                            Sempre consulte um profissional de saúde qualificado.
+                            """)
+                            
+                            st.info("🎭 **Modo Demo:** Esta é uma demonstração com predições simuladas!")
+                    else:
+                        st.error("❌ Erro na predição. Verifique se a imagem é válida.")
 
 # Footer
 st.markdown("---")

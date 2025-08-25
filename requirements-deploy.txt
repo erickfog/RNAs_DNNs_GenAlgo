@@ -1,0 +1,21 @@
+# Requirements para DEPLOY - apenas o essencial para executar o app
+# Use: pip install -r requirements-deploy.txt
+# NÃO inclui bibliotecas de treinamento (tensorflow, torch, etc.)
+
+# Core para execução
+numpy>=1.21.0,<2.0.0
+pillow>=8.0.0
+
+# Web App
+streamlit>=1.20.0,<2.0.0
+
+# Dataset (apenas para carregar informações)
+medmnist>=1.0.0
+
+# Dependências mínimas do sistema
+setuptools>=65.0.0
+wheel>=0.37.0
+
+# Segurança
+certifi>=2023.7.22
+urllib3>=1.26.16
