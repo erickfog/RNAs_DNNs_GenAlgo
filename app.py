@@ -12,6 +12,15 @@ import os
 # Configurar para usar apenas CPU (evitar erros CUDA)
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
+# Configurações específicas para deploy no Render
+if os.environ.get('RENDER', False) or os.environ.get('PORT'):
+    # Estamos no Render ou ambiente similar
+    os.environ['STREAMLIT_SERVER_PORT'] = os.environ.get('PORT', '8501')
+    os.environ['STREAMLIT_SERVER_ADDRESS'] = '0.0.0.0'
+    os.environ['STREAMLIT_SERVER_HEADLESS'] = 'true'
+    os.environ['STREAMLIT_BROWSER_GATHER_USAGE_STATS'] = 'false'
+    print("🚀 Configuração de deploy detectada!")
+
 # Tentar importar TensorFlow (opcional para deploy)
 try:
     import tensorflow as tf
